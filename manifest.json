@@ -1,7 +1,7 @@
 {
-  "name": "bdix",
+  "name": "BDIX streams",
   "version": "1.0.0",
-  "description": "Streams from BDIX-connected libraries.",
+  "description": "Provides streams from scraped BDIX connected providers.",
   "author": "ahnaf0014",
   "scrapers": [
     {
