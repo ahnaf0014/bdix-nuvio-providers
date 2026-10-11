@@ -68,7 +68,7 @@ back with *SAW II*.
 ```
 manifest.json      the source list Nuvio reads
 src/               the hand-written providers
-providers/         GENERATED - manifest.js + src/<id>.js, this is what Nuvio downloads
+providers/         GENERATED - src/common.js + src/<id>.js, this is what Nuvio downloads
 build.py           regenerates providers/ and validates the manifest
 test/              unit vectors and live checks
 ```

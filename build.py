@@ -84,10 +84,16 @@ def load_manifest() -> dict:
         seen_ids.add(sid)
         seen_files.add(scraper["filename"])
 
-        # The file Nuvio fetches is resolved from the manifest URL + filename,
-        # so a filename with a directory in it would resolve somewhere else.
-        if "/" in scraper["filename"] or not scraper["filename"].endswith(".js"):
-            die(f"{where}: filename must be a bare *.js name")
+        # Nuvio resolves this as `<manifest URL minus /manifest.json>/<filename>` -
+        # a plain string concatenation, with no notion of a document base.  So it
+        # is a path from the repository root, and a bare name points at a file
+        # that is not there.  This is also why manifest.json has to sit at the
+        # root: the prefix is not configurable, so a manifest in a subdirectory
+        # could not reach a sibling of it.
+        parts = scraper["filename"].split("/")
+        if len(parts) != 2 or parts[0] != "providers" or not parts[1].endswith(".js"):
+            die(f"{where}: filename must be providers/<id>.js - the path Nuvio "
+                "fetches it from, relative to the manifest's directory")
 
         types = scraper["supportedTypes"]
         if not isinstance(types, list) or not types:
@@ -104,7 +110,7 @@ def load_manifest() -> dict:
 
 
 def render(manifest: dict) -> dict:
-    """{filename: file text} for every scraper in the manifest."""
+    """{repo-relative filename: file text} for every scraper in the manifest."""
     common = (SRC / "common.js").read_text(encoding="utf-8").rstrip() + "\n"
     out = {}
     for scraper in manifest["scrapers"]:
@@ -125,14 +131,15 @@ def main(argv: list) -> int:
     if check:
         drift = []
         for name, text in sorted(generated.items()):
-            path = OUT / name
+            path = ROOT / name
             if not path.exists():
-                drift.append(f"missing:     providers/{name}")
+                drift.append(f"missing:     {name}")
             elif path.read_text(encoding="utf-8") != text:
-                drift.append(f"out of date: providers/{name}")
+                drift.append(f"out of date: {name}")
         for path in sorted(OUT.glob("*.js")) if OUT.is_dir() else []:
-            if path.name not in generated:
-                drift.append(f"stale:       providers/{path.name}")
+            rel = path.relative_to(ROOT).as_posix()
+            if rel not in generated:
+                drift.append(f"stale:       {rel}")
         if drift:
             sys.stderr.write(
                 "build.py: providers/ is not what src/ produces:\n  "
@@ -145,10 +152,10 @@ def main(argv: list) -> int:
 
     OUT.mkdir(exist_ok=True)
     for name, text in sorted(generated.items()):
-        (OUT / name).write_text(text, encoding="utf-8")
+        (ROOT / name).write_text(text, encoding="utf-8")
     removed = []
     for path in sorted(OUT.glob("*.js")):
-        if path.name not in generated:
+        if path.relative_to(ROOT).as_posix() not in generated:
             path.unlink()
             removed.append(path.name)
 
