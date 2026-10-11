@@ -1,0 +1,18 @@
+{
+ "_comment": [
+  "The metadata Nuvio would hand a provider, written down so `test/run.js --contract` can",
+  "exercise the whole getStreams path without a TMDB key.  These are the *inputs* a check is",
+  "run with, not expectations - nothing here is asserted about the sites.",
+  "When TMDB_API_KEY is set, run.js asks TMDB for the same ids and reports any entry whose",
+  "name or year has drifted, so this file cannot quietly go stale."
+ ],
+ "titles": [
+  { "id": 438631, "type": "movie", "name": "Dune", "year": 2021 },
+  { "id": 693134, "type": "movie", "name": "Dune: Part Two", "year": 2024 },
+  { "id": 550, "type": "movie", "name": "Fight Club", "year": 1999 },
+  { "id": 20453, "type": "movie", "name": "3 Idiots", "year": 2009 },
+  { "id": 157336, "type": "movie", "name": "Interstellar", "year": 2014 },
+  { "id": 1396, "type": "tv", "name": "Breaking Bad", "year": 2008, "season": 1, "episode": 1 },
+  { "id": 87108, "type": "tv", "name": "Chernobyl", "year": 2019, "season": 1, "episode": 1 }
+ ]
+}

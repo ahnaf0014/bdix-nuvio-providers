@@ -1,0 +1,9 @@
+# Nothing here is generated at build time except providers/, which is committed
+# on purpose: the files Nuvio fetches are the ones in the repo, so what a client
+# downloads is always reviewable in the history rather than produced on the fly.
+# `python build.py` regenerates them, and CI fails if they drift from src/.
+
+__pycache__/
+*.py[cod]
+.DS_Store
+Thumbs.db

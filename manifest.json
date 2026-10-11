@@ -1,0 +1,74 @@
+{
+  "name": "bdix",
+  "version": "1.0.0",
+  "description": "Streams from BDIX-connected libraries.",
+  "author": "ahnaf0014",
+  "scrapers": [
+    {
+      "id": "circleftp",
+      "name": "CircleFTP",
+      "description": "Films and series from the CircleFTP library.",
+      "version": "1.0.0",
+      "filename": "circleftp.js",
+      "supportedTypes": ["movie", "tv"],
+      "enabled": true,
+      "hasSettings": false,
+      "logo": "https://raw.githubusercontent.com/ahnaf0014/bdix-nuvio-providers/main/logo.png"
+    },
+    {
+      "id": "ctgmovies",
+      "name": "CTGMovies",
+      "description": "Films and series from the CTGMovies library.",
+      "version": "1.0.0",
+      "filename": "ctgmovies.js",
+      "supportedTypes": ["movie", "tv"],
+      "enabled": true,
+      "hasSettings": false,
+      "logo": "https://raw.githubusercontent.com/ahnaf0014/bdix-nuvio-providers/main/logo.png"
+    },
+    {
+      "id": "dflix",
+      "name": "Dflix(Dot)",
+      "description": "Films and series from the Dflix(Dot) library.",
+      "version": "1.0.0",
+      "filename": "dflix.js",
+      "supportedTypes": ["movie", "tv"],
+      "enabled": true,
+      "hasSettings": false,
+      "logo": "https://raw.githubusercontent.com/ahnaf0014/bdix-nuvio-providers/main/logo.png"
+    },
+    {
+      "id": "dhakaflix",
+      "name": "DhakaFlix",
+      "description": "Films and series from the DhakaFlix library.",
+      "version": "1.0.0",
+      "filename": "dhakaflix.js",
+      "supportedTypes": ["movie", "tv"],
+      "enabled": true,
+      "hasSettings": false,
+      "logo": "https://raw.githubusercontent.com/ahnaf0014/bdix-nuvio-providers/main/logo.png"
+    },
+    {
+      "id": "iccftp",
+      "name": "ICC FTP",
+      "description": "Films and series from the ICC FTP shares.",
+      "version": "1.0.0",
+      "filename": "iccftp.js",
+      "supportedTypes": ["movie", "tv"],
+      "enabled": true,
+      "hasSettings": false,
+      "logo": "https://raw.githubusercontent.com/ahnaf0014/bdix-nuvio-providers/main/logo.png"
+    },
+    {
+      "id": "nagordola",
+      "name": "Nagordola",
+      "description": "Films and series from the Nagordola library.",
+      "version": "1.0.0",
+      "filename": "nagordola.js",
+      "supportedTypes": ["movie", "tv"],
+      "enabled": true,
+      "hasSettings": false,
+      "logo": "https://raw.githubusercontent.com/ahnaf0014/bdix-nuvio-providers/main/logo.png"
+    }
+  ]
+}
