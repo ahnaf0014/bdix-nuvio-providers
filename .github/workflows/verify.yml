@@ -1,0 +1,34 @@
+name: verify
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # providers/ is committed so that what a client downloads is reviewable.
+      # That only means anything if it is what src/ actually builds to.
+      - name: providers/ is up to date with src/
+        run: python build.py --check
+
+      - name: every generated file parses
+        run: for f in providers/*.js; do node --check "$f"; done
+
+      - name: the port agrees with the Python it was ported from
+        run: node test/units.js
+
+# test/run.js is deliberately not here: it talks to the six real sources, and a
+# runner has no route to them.  It runs locally.
