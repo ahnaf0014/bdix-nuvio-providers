@@ -208,6 +208,14 @@ function metaFrom(title, base) {  return (url, options) => {
     const body = m[1] === 'movie'
       ? { title: t.name, release_date: `${t.year}-01-01` }
       : { name: t.name, first_air_date: `${t.year}-01-01` };
+    // `seasons` on an entry is how many seasons TMDB records for the show, and
+    // it is load-bearing rather than decoration: a show TMDB records as one
+    // season is filed by the sites in some other way, so a fixture without it
+    // exercises the ordinary path and never the other one.
+    if (m[1] === 'tv' && t.seasons) {
+      body.seasons = [];
+      for (let i = 1; i <= t.seasons; i++) body.seasons.push({ season_number: i });
+    }
     const text = JSON.stringify(body);
     return Promise.resolve({
       ok: true, status: 200, statusText: 'OK', url,
@@ -240,9 +248,30 @@ async function contractChecks(meta) {
     }]);
   }
 
+  // The reported wrong show, kept as a check rather than a note.
+  //
+  // Nagordola's search asks the library for every word of the query, and its
+  // "Dragon Ball Z" episode files are titled "... Super ...", so a request for
+  // "Dragon Ball Super" comes back holding Dragon Ball Z's folder.  That folder
+  // has no year to weigh the name against, and playing it put a different
+  // series at the requested one's place.  The library does not have Dragon Ball
+  // Super, so nothing is the only right answer here.
+  out.push(['wrong show', 'dragon ball super', async () => {
+    const t = { name: 'Dragon Ball Super', year: 2015 };
+    const g = loadGlobals('providers/nagordola.js', {
+      TMDB_API_KEY: 'fixture',
+      fetch: metaFrom(t, bridgeFetch()),
+    });
+    const got = await g.getStreams(62715, 'tv', 1, 1);
+    need(Array.isArray(got), 'getStreams did not return an array');
+    need(got.length === 0,
+      `returned ${got.length} stream(s) for a series this library does not have`);
+    return 'nothing, as it should';
+  }]);
+
   for (const t of meta.titles) {
     out.push([t.type === 'movie' ? 'film' : 'series', String(t.id), async () => {
-      const id = t.type === 'movie' ? 'dflix' : 'nagordola';
+      const id = t.provider || (t.type === 'movie' ? 'dflix' : 'nagordola');
       const g = loadGlobals(`providers/${id}.js`, {
         TMDB_API_KEY: 'fixture',
         fetch: metaFrom(t, bridgeFetch()),

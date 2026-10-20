@@ -13,6 +13,8 @@
   { "id": 20453, "type": "movie", "name": "3 Idiots", "year": 2009 },
   { "id": 157336, "type": "movie", "name": "Interstellar", "year": 2014 },
   { "id": 1396, "type": "tv", "name": "Breaking Bad", "year": 2008, "season": 1, "episode": 1 },
-  { "id": 87108, "type": "tv", "name": "Chernobyl", "year": 2019, "season": 1, "episode": 1 }
+  { "id": 87108, "type": "tv", "name": "Chernobyl", "year": 2019, "season": 1, "episode": 1 },
+  { "id": 62715, "type": "tv", "name": "Dragon Ball Super", "year": 2015, "season": 1, "episode": 70,
+    "provider": "dflix", "seasons": 1 }
  ]
 }

@@ -128,6 +128,12 @@ function mediaMeta(tmdbId, mediaType) {
       name: kind === "tv" ? (d.name || "") : (d.title || ""),
       year: intYear(kind === "tv" ? d.first_air_date : d.release_date),
       kind: kind,
+      // Excluding season 0 (specials), because what this decides is whether
+      // the season numbers a site files by are TMDB seasons at all - see the
+      // arc folders in dflix.
+      seasons: kind === "tv"
+        ? (d.seasons || []).filter(function (s) { return s.season_number > 0; }).length
+        : 0,
     };
     _metaCache[key] = meta;
     return meta;
@@ -373,6 +379,7 @@ function yearBonus(gap) {
 
 var MATCH_FLOOR = 0.5;      // below this the titles aren't the same work at all
 var YEAR_TOLERANCE = 1;     // site year vs source year may legitimately differ
+var YEARLESS_FLOOR = 0.9;   // ... and a name with no year has to carry it alone
 
 // Score a candidate title against the wanted one, null if it cannot be it.
 //
@@ -386,11 +393,19 @@ var YEAR_TOLERANCE = 1;     // site year vs source year may legitimately differ
 // that agrees outright: a name which merely *contains* the wanted one is a
 // different work often enough to matter, so a differing year needs an exact
 // name match.
+//
+// When either year is missing there is nothing to weigh the name against, so
+// the name has to carry the match by itself.  similar() returns 0.9 for a title
+// the site filed short and 1.0 for the same name, and the band below that is
+// only lookalike-but-different works: every pair in the test corpus scoring
+// 0.5..0.9 is two different titles.  "Dragon Ball Super" against the yearless
+// folder "Dragon Ball Z" scores 0.8, and accepting that played the wrong series
+// for every episode.
 function matchScore(name, year, otherName, otherYear) {
   var sim = similar(name, otherName);
   if (sim < MATCH_FLOOR) return null;
   var y = intYear(year), oy = intYear(otherYear);
-  if (!(y && oy)) return sim;                     // nothing to weigh against
+  if (!(y && oy)) return sim >= YEARLESS_FLOOR ? sim : null;
   var gap = Math.abs(y - oy);
   if (gap > YEAR_TOLERANCE || (gap && sim < 1.0)) return null;
   return sim + yearBonus(gap);

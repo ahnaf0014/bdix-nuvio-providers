@@ -128,6 +128,12 @@ function mediaMeta(tmdbId, mediaType) {
       name: kind === "tv" ? (d.name || "") : (d.title || ""),
       year: intYear(kind === "tv" ? d.first_air_date : d.release_date),
       kind: kind,
+      // Excluding season 0 (specials), because what this decides is whether
+      // the season numbers a site files by are TMDB seasons at all - see the
+      // arc folders in dflix.
+      seasons: kind === "tv"
+        ? (d.seasons || []).filter(function (s) { return s.season_number > 0; }).length
+        : 0,
     };
     _metaCache[key] = meta;
     return meta;
@@ -373,6 +379,7 @@ function yearBonus(gap) {
 
 var MATCH_FLOOR = 0.5;      // below this the titles aren't the same work at all
 var YEAR_TOLERANCE = 1;     // site year vs source year may legitimately differ
+var YEARLESS_FLOOR = 0.9;   // ... and a name with no year has to carry it alone
 
 // Score a candidate title against the wanted one, null if it cannot be it.
 //
@@ -386,11 +393,19 @@ var YEAR_TOLERANCE = 1;     // site year vs source year may legitimately differ
 // that agrees outright: a name which merely *contains* the wanted one is a
 // different work often enough to matter, so a differing year needs an exact
 // name match.
+//
+// When either year is missing there is nothing to weigh the name against, so
+// the name has to carry the match by itself.  similar() returns 0.9 for a title
+// the site filed short and 1.0 for the same name, and the band below that is
+// only lookalike-but-different works: every pair in the test corpus scoring
+// 0.5..0.9 is two different titles.  "Dragon Ball Super" against the yearless
+// folder "Dragon Ball Z" scores 0.8, and accepting that played the wrong series
+// for every episode.
 function matchScore(name, year, otherName, otherYear) {
   var sim = similar(name, otherName);
   if (sim < MATCH_FLOOR) return null;
   var y = intYear(year), oy = intYear(otherYear);
-  if (!(y && oy)) return sim;                     // nothing to weigh against
+  if (!(y && oy)) return sim >= YEARLESS_FLOOR ? sim : null;
   var gap = Math.abs(y - oy);
   if (gap > YEAR_TOLERANCE || (gap && sim < 1.0)) return null;
   return sim + yearBonus(gap);
@@ -817,6 +832,25 @@ function _extractTitle(titleId, text) {
 }
 
 
+// ---- episode numbers ----------------------------------------------------
+
+// The episode number in a filename, for the records the site left null.
+//
+// Three digits at most, and not the start of a decimal: after a dash here a
+// long run is a resolution or a year ("-1080p", "-2021") and "5.1" is an audio
+// channel count, none of which is an episode.  The site does fill `episode`
+// itself for most titles, so this is only the fallback.
+var _EP_IN_NAME = /-[_\s]*(\d{1,3})(?!\.\d)[_\s(.]/;
+
+function _episodeOf(f) {
+  if (f.episode != null) return f.episode;
+  var marked = episodeMarker(f.path);          // S01E02 in the filename
+  if (marked[1] != null) return marked[1];
+  var m = _EP_IN_NAME.exec(String(f.path || ""));
+  return m ? parseInt(m[1], 10) : null;
+}
+
+
 // ---- site calls ---------------------------------------------------------
 
 async function _search(q, limit) {
@@ -899,9 +933,18 @@ function _movieStreams(title, media) {
   }, 3), media, "");
 }
 
-function _episodeStreams(title, media, season, episode) {
+// `absolute` is set when TMDB records one season for this show.
+//
+// Then the site's season number is not a season at all: it files the show by
+// arc ("Season 1 Battle of Gods Arc", "Season 2 Resurrection F Arc", ...) and
+// numbers the episodes absolutely across them, while TMDB has a single season
+// to ask for.  Comparing the season there returns nothing for every arc after
+// the first - which is how Dragon Ball Super came back empty for every
+// episode even though the library has all of them.
+function _episodeStreams(title, media, season, episode, absolute) {
   return _build(_pickByQuality(title.files || [], function (f) {
-    return f.season === season && f.episode === episode;
+    if (_episodeOf(f) !== episode) return false;
+    return absolute || f.season === season;
   }, 2), media, episodeTag(season, episode));
 }
 
@@ -935,7 +978,7 @@ async function getStreams(tmdbId, mediaType, season, episode) {
 
   return kind === "movie"
     ? _movieStreams(title, media)
-    : _episodeStreams(title, media, season, episode);
+    : _episodeStreams(title, media, season, episode, meta.seasons === 1);
 }
 
 
