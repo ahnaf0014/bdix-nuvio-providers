@@ -355,12 +355,17 @@ function seqRatio(a, b) {
 //     a longer name.  "It Ends with Us" is not "It Ends", and "Avatar: Fire
 //     and Ash" is not "Avatar".  Nothing may follow but the site's own
 //     annotations, a stop word or the year;
+//   * a name made only of digits has nothing else to be told apart by, so a
+//     name that continues it is a longer number rather than this title written
+//     long: "$9.99" normalises to "9 99", whose tail is a digit and so reads as
+//     an annotation, and a request for "9" (2009) played it;
 //   * anything left is judged on the letters, but only between names that
 //     agree on their first real word.
 function similar(a, b) {
   a = norm(a); b = norm(b);
   if (!a || !b) return 0.0;
   if (a === b) return 1.0;
+  if (/^\d+$/.test(a)) return 0.0;
   if (a.indexOf(b) >= 0) return 0.9;              // the site filed it short
   if (b.indexOf(a) >= 0) {
     if (b.indexOf(a) !== 0) return 0.9;           // wanted title inside a longer one

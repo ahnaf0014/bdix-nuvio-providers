@@ -66,7 +66,7 @@ TITLES = [
     "Mayday", "May Day", "The Mayday",
     "Spirited Away", "Sen to Chihiro no Kamikakushi",
     "Interstellar", "Oppenheimer", "Fight Club", "Fight Club (1999)",
-    "Face/Off", "9", "9/11", "Up", "Her",
+    "Face/Off", "9", "9/11", "$9.99", "Up", "Her",
     "The Lord of the Rings", "The Lord of the Rings: The Fellowship of the Ring",
     "Rick and Morty", "American Horror Story",
 ]
@@ -158,7 +158,7 @@ for a, b in pairs:
 for a in TITLES:
     for b in TITLES:
         for ya, yb in [(None, None), (1999, None), (None, 1999),
-                       (1999, 1999), (1999, 2000), (1999, 2001),
+                       (1999, 1999), (2009, 2009), (1999, 2000), (1999, 2001),
                        (1999, 2003), (2021, 2024)]:
             case("matchScore", [a, ya, b, yb], C.match_score(a, ya, b, yb))
 
